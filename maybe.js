@@ -3,10 +3,7 @@ var Proxy = require('node-proxy')
 function handlerMaker(obj) {
   return {
     get: function(receiver, name) {
-      if (typeof obj != 'object' && name === 'valueOf') {
-        return function() { return obj }
-      }
-      if (typeof obj[name] == 'function') return obj[name]
+      if (typeof obj[name] == 'function') return obj[name].bind(obj)
       return Maybe(obj[name])
     },
     enumerate: keyEnum,
