@@ -16,24 +16,14 @@ function Just(obj) {
 }
 
 var Nothing = (function() {
-  var nilObj = {}
-  Object.defineProperty(nilObj, "valueOf"
+  var Nothing = {}
+  Object.defineProperty(Nothing, "valueOf"
   , { enumberable: false
     , writeable: true
     , value: function() { return null } 
     }
   )
-  return Proxy.create({
-    get: function(_, name) {
-      return nilObj[name] != null ? nilObj[name]
-      : Nothing
-    },
-    enumerate: keyEnum,
-    keys: keyEnum
-  })
-  function keyEnum() {
-    return []
-  }
+  return Just(Nothing)
 })()
 
 function Maybe(obj) {
