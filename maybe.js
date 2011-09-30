@@ -1,20 +1,21 @@
 var Proxy = require('node-proxy')
 
-function handlerMaker(obj) {
-  return {
+function Just(obj) {
+  return Proxy.create({
     get: function(receiver, name) {
       if (typeof obj[name] == 'function') return obj[name].bind(obj)
       return Maybe(obj[name])
     },
     enumerate: keyEnum,
     keys: keyEnum,
-  }
+  })
+
   function keyEnum() {
     return typeof obj == 'object' ? Object.keys(obj) : []
   }
 }
 
-var Nil = (function() {
+var Nothing = (function() {
   var nilObj = {}
   Object.defineProperty(nilObj, "valueOf"
   , { enumberable: false
@@ -25,7 +26,7 @@ var Nil = (function() {
   return Proxy.create({
     get: function(_, name) {
       return nilObj[name] != null ? nilObj[name]
-      : Nil
+      : Nothing
     },
     enumerate: keyEnum,
     keys: keyEnum
@@ -36,8 +37,8 @@ var Nil = (function() {
 })()
 
 function Maybe(obj) {
-  return obj == null ? Nil
-  : Proxy.create(handlerMaker(obj))
+  return obj == null ? Nothing
+  : Just(obj)
 }
 
 // Examples of Maybe below.
@@ -46,7 +47,7 @@ var obj = { a: 123, b: 45, c: { a: 'hello' }}
 
 function cleanCopy(item, key) {
   var ret = {}
-  return item != Nil && typeof item.valueOf() == 'object' ?
+  return item != Nothing && typeof item.valueOf() == 'object' ?
     Object.keys(item).forEach(function(prop) {
       ret[prop] = cleanCopy(item[prop])
     }) || ret
@@ -54,7 +55,7 @@ function cleanCopy(item, key) {
 }
 log = function(item, msg) {
   var itemIsObj = typeof item == 'object'
-    , format = itemIsObj ? "%j -> %s" : "%s -> %s"
+    , format = itemIsObj ? "%j <- %s" : "%s -> %s"
     , printItem = itemIsObj ? cleanCopy(item) : item
   console.log(format, printItem, msg)
 }
